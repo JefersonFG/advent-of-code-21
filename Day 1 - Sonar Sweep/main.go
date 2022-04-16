@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Open input file
-	input_file, err := os.Open("sample_input.txt")
+	input_file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,9 +45,22 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: Process the input
-	fmt.Println("Sample input:")
-	for _, l := range values {
-		fmt.Println(l)
+	// Result
+	total_measure_increases := 0
+
+	// Saves first value as previous, update on each iteration
+	previous := values[0]
+
+	// Traverse the list of values once comparing the current and previous values
+	// This logic does assume at least two items present on the input
+	for i := 1; i < len(values); i++ {
+		current := values[i]
+		if current > previous {
+			total_measure_increases++
+		}
+		previous = current
 	}
+
+	// Prints the result
+	fmt.Printf("Total measurement increases: %d\n", total_measure_increases)
 }
