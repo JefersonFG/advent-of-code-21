@@ -65,16 +65,42 @@ func main() {
 	for i := 0; i < len(commands); i++ {
 		// Checks for current command
 		// Assumes only valid commands
+		value := int(offsets[i])
 		switch commands[i] {
 		case "forward":
-			horizontal_position += int(offsets[i])
+			horizontal_position += value
 		case "down":
-			depth += int(offsets[i])
+			depth += value
 		default:
-			depth -= int(offsets[i])
+			depth -= value
 		}
 	}
 
 	// Prints the result
 	fmt.Printf("Final position value: %d\n", horizontal_position*depth)
+
+	// ### Part 2 ###
+	// Reset previous values, add aim to the mix
+	horizontal_position = 0
+	depth = 0
+	aim := 0
+
+	// Traverse the list of instructions operating on the position values
+	for i := 0; i < len(commands); i++ {
+		// Checks for current command
+		// Assumes only valid commands
+		value := int(offsets[i])
+		switch commands[i] {
+		case "forward":
+			horizontal_position += value
+			depth += aim * value
+		case "down":
+			aim += value
+		default:
+			aim -= value
+		}
+	}
+
+	// Prints the result
+	fmt.Printf("Final position value with aim covered: %d\n", horizontal_position*depth)
 }
