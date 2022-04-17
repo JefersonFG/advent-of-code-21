@@ -45,6 +45,7 @@ func main() {
 		panic(err)
 	}
 
+	// ### Part 1 ###
 	// Result
 	total_measure_increases := 0
 
@@ -63,4 +64,24 @@ func main() {
 
 	// Prints the result
 	fmt.Printf("Total measurement increases: %d\n", total_measure_increases)
+
+	// ### Part 2 ###
+	// Reset the result variable
+	total_measure_increases = 0
+
+	// Reset the previous value
+	// Again, assuming we have at least two windows to compare
+	previous = values[0] + values[1] + values[2]
+
+	// Iterate until two addresses before the last
+	for i := 1; i < len(values)-2; i++ {
+		current := values[i] + values[i+1] + values[i+2]
+		if current > previous {
+			total_measure_increases++
+		}
+		previous = current
+	}
+
+	// Prints the result
+	fmt.Printf("Total measurement increases for the three value windows: %d\n", total_measure_increases)
 }
