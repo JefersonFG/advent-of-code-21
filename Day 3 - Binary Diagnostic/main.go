@@ -29,12 +29,18 @@ func main() {
 	// The hash table counts the occurrences of 0s and 1s on each position
 	var positions []map[string]int
 
+	// List of lines from the input, necessary for part 2
+	var input_lines []string
+
 	for scanner.Scan() {
 		// Reads a line and check that it isn't empty
 		line := scanner.Text()
 		if len(line) == 0 {
 			break
 		}
+
+		// Saves the line on the list of lines
+		input_lines = append(input_lines, line)
 
 		// Splits the line into a list of strings
 		input_values := strings.Split(line, "")
@@ -85,4 +91,64 @@ func main() {
 	fmt.Printf("Resulting gamma rate: %d\n", gamma_rate)
 	fmt.Printf("Resulting epsilon rate: %d\n", epsilon_rate)
 	fmt.Printf("Submarine power consumption: %d\n", gamma_rate*epsilon_rate)
+
+	// ### Part 2 ###
+	// To calculate the oxygen generator and CO2 scrubber ratings
+	// we need the most common and least common bits on each position
+	// We then use them as prefixes for the actual values until we find only one value left
+	// The bits are already available in the gamma and epsilon rates, so we use those
+
+	// TODO: This approach uses the global most and least common bits
+	// It should recalculate for each sublist
+	// Rework the logic
+
+	// Final values
+	var oxygen_generator_rating int64
+	var co2_scrubber_rating int64
+	var oxygen_generator_rating_binary string
+	var co2_scrubber_rating_binary string
+
+	// For each bit on the gamma and epsilon rates filter the input values
+	for i := 0; i <= len(gamma_rate_binary); i++ {
+		// Intermediary lists
+		var updated_oxygen_values []string
+		var updated_co2_values []string
+
+		// Current prefixes
+		gamma_prefix := gamma_rate_binary[:i]
+		epsilon_prefix := epsilon_rate_binary[:i]
+
+		// Check each input value and save the ones that have the valid prefix
+		for j := 0; j < len(input_lines); j++ {
+			if strings.HasPrefix(input_lines[j], gamma_prefix) {
+				updated_oxygen_values = append(updated_oxygen_values, input_lines[j])
+			}
+			if strings.HasPrefix(input_lines[j], epsilon_prefix) {
+				updated_co2_values = append(updated_co2_values, input_lines[j])
+			}
+		}
+
+		// Checks the list of values, if unitary save the final value
+		if len(updated_oxygen_values) == 1 {
+			oxygen_generator_rating_binary = updated_oxygen_values[0]
+		}
+		if len(updated_co2_values) == 1 {
+			co2_scrubber_rating_binary = updated_co2_values[0]
+		}
+	}
+
+	oxygen_generator_rating, err = strconv.ParseInt(oxygen_generator_rating_binary, 2, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	co2_scrubber_rating, err = strconv.ParseInt(co2_scrubber_rating_binary, 2, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	// Print the resulting values
+	fmt.Printf("Resulting oxygen generator rating: %d\n", oxygen_generator_rating)
+	fmt.Printf("Resulting co2 scrubber rating: %d\n", co2_scrubber_rating)
+	fmt.Printf("Submarine power consumption: %d\n", oxygen_generator_rating*co2_scrubber_rating)
 }
