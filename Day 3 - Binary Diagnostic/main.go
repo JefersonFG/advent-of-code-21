@@ -95,12 +95,13 @@ func main() {
 	// ### Part 2 ###
 	// To calculate the oxygen generator and CO2 scrubber ratings
 	// we need the most common and least common bits on each position
-	// We then use them as prefixes for the actual values until we find only one value left
-	// The bits are already available in the gamma and epsilon rates, so we use those
 
-	// TODO: This approach uses the global most and least common bits
-	// It should recalculate for each sublist
-	// Rework the logic
+	// Intermediary lists
+	updated_oxygen_values := make([]string, len(input_lines))
+	updated_co2_values := make([]string, len(input_lines))
+
+	copy(updated_oxygen_values, input_lines)
+	copy(updated_co2_values, input_lines)
 
 	// Final values
 	var oxygen_generator_rating int64
@@ -109,24 +110,10 @@ func main() {
 	var co2_scrubber_rating_binary string
 
 	// For each bit on the gamma and epsilon rates filter the input values
-	for i := 0; i <= len(gamma_rate_binary); i++ {
-		// Intermediary lists
-		var updated_oxygen_values []string
-		var updated_co2_values []string
-
-		// Current prefixes
-		gamma_prefix := gamma_rate_binary[:i]
-		epsilon_prefix := epsilon_rate_binary[:i]
-
-		// Check each input value and save the ones that have the valid prefix
-		for j := 0; j < len(input_lines); j++ {
-			if strings.HasPrefix(input_lines[j], gamma_prefix) {
-				updated_oxygen_values = append(updated_oxygen_values, input_lines[j])
-			}
-			if strings.HasPrefix(input_lines[j], epsilon_prefix) {
-				updated_co2_values = append(updated_co2_values, input_lines[j])
-			}
-		}
+	for i := 0; i < len(gamma_rate_binary); i++ {
+		// Updates the list of values checking the next position
+		updated_oxygen_values = valuesWithMostCommonBitOnPosition(updated_oxygen_values, i)
+		updated_co2_values = valuesWithLeastCommonBitOnPosition(updated_co2_values, i)
 
 		// Checks the list of values, if unitary save the final value
 		if len(updated_oxygen_values) == 1 {
@@ -151,4 +138,63 @@ func main() {
 	fmt.Printf("Resulting oxygen generator rating: %d\n", oxygen_generator_rating)
 	fmt.Printf("Resulting co2 scrubber rating: %d\n", co2_scrubber_rating)
 	fmt.Printf("Submarine power consumption: %d\n", oxygen_generator_rating*co2_scrubber_rating)
+}
+
+// Calculates the most common bit on the given position for the given values on the list
+// Then returns a list with only the values that have the most common bit on that position
+func valuesWithMostCommonBitOnPosition(value_list []string, position int) []string {
+	// Number of occurrences of each bit
+	zero_occurrences, one_occurrences := calculateBitFrequency(value_list, position)
+
+	// Checks with was more frequent, tie keeps the ones with bit 1 on the given position
+	if zero_occurrences > one_occurrences {
+		// Removes values with bit 1 on the position
+		return filterValueList(value_list, position, '1')
+	} else {
+		// Removes values with bit 0 on the position
+		return filterValueList(value_list, position, '0')
+	}
+}
+
+// Calculates the least common bit on the given position for the given values on the list
+// Then returns a list with only the values that have the least common bit on that position
+func valuesWithLeastCommonBitOnPosition(value_list []string, position int) []string {
+	// Number of occurrences of each bit
+	zero_occurrences, one_occurrences := calculateBitFrequency(value_list, position)
+
+	// Checks with was less frequent, tie keeps the ones with bit 0 on the given position
+	if zero_occurrences <= one_occurrences {
+		// Removes values with bit 1 on the position
+		return filterValueList(value_list, position, '1')
+	} else {
+		// Removes values with bit 0 on the position
+		return filterValueList(value_list, position, '0')
+	}
+}
+
+// Returns the frequency of each bit on a given position for the given values
+func calculateBitFrequency(value_list []string, position int) (zero_occurrences int, one_occurrences int) {
+	for _, bits := range value_list {
+		// Counts the bit at the given position
+		if bits[position] == '0' {
+			zero_occurrences++
+		} else {
+			one_occurrences++
+		}
+	}
+
+	return
+}
+
+// Filters the input list returning only the elements that don't have the given bit on the given position
+func filterValueList(value_list []string, position int, bit byte) []string {
+	filtered_list := []string{}
+
+	for _, value := range value_list {
+		if value[position] != bit {
+			filtered_list = append(filtered_list, value)
+		}
+	}
+
+	return filtered_list
 }
