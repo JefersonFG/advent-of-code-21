@@ -13,7 +13,7 @@ import (
 // Structure to hold information related to one table for the bingo
 type bingo struct {
 	table                        [5][5]int // The table itself, holding only the values for each field
-	line_matches, column_matches []int     // Lists for value matches on lines and columns, if size reaches 5 the table won
+	line_matches, column_matches [5]int    // Lists for value matches on lines and columns, if the value reaches 5 the table won
 }
 
 func main() {
@@ -34,7 +34,7 @@ func main() {
 	var random_values []int
 
 	// Following lines define a series of tables
-	var bingo_tables []bingo
+	var bingo_tables []*bingo
 
 	// Table line being currently read, used to indicate when a new table must be created
 	current_line := 0
@@ -68,7 +68,7 @@ func main() {
 
 		// If line currently being read is the first then create a new table
 		if current_line == 0 {
-			bingo_tables = append(bingo_tables, bingo{})
+			bingo_tables = append(bingo_tables, &bingo{})
 		}
 
 		// Read the current line of the last table
@@ -96,6 +96,79 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: Determine the winning value
-	fmt.Println(bingo_tables)
+	// Hash for storing all number occurrences; if a number was drawn it is on the hash
+	// Comes at a faster lookup than a simple list
+	drawn_hash := make(map[int]bool)
+
+	// Boolean indicating if the game was won to finish the loop
+	game_won := false
+
+	// Final score
+	score := 0
+
+	// For the game loop we start drawing the number
+	for _, random_value := range random_values {
+		// Add the value to the hash
+		drawn_hash[random_value] = true
+
+		// Search for the number on each table
+		for _, bingo_table := range bingo_tables {
+			// Tables have fixed size
+			for i := 0; i < 5; i++ {
+				for j := 0; j < 5; j++ {
+					// If the value has been found update both arrays
+					if bingo_table.table[i][j] == random_value {
+						// If one of the arrays reach value 5 the table has won
+						if bingo_table.line_matches[i]++; bingo_table.line_matches[i] >= 5 {
+							score = calculateScore(bingo_table, random_value, drawn_hash)
+							game_won = true
+						}
+						if bingo_table.column_matches[j]++; bingo_table.column_matches[j] >= 5 {
+							score = calculateScore(bingo_table, random_value, drawn_hash)
+							game_won = true
+						}
+					}
+
+					if game_won {
+						break
+					}
+				}
+
+				if game_won {
+					break
+				}
+			}
+
+			if game_won {
+				break
+			}
+		}
+
+		if game_won {
+			break
+		}
+	}
+
+	// Shows the final score
+	fmt.Printf("Final score: %d\n", score)
+}
+
+func calculateScore(bingo_table *bingo, random_value int, drawn_hash map[int]bool) (score int) {
+	// Calculate the sum of all unmarked numbers
+	sum := 0
+
+	// For every value on the table check if it exists on the hash
+	for i := 0; i < 5; i++ {
+		for j := 0; j < 5; j++ {
+			// If it doesn't exist accumulate the value
+			_, ok := drawn_hash[bingo_table.table[i][j]]
+			if !ok {
+				sum += bingo_table.table[i][j]
+			}
+		}
+	}
+
+	// Calculates and returns the score
+	score = sum * random_value
+	return
 }
