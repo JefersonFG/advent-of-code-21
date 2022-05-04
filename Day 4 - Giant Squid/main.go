@@ -17,9 +17,13 @@ type bingo struct {
 }
 
 func main() {
+	// Flag for winner or loser
+	var winner bool
+
 	// Open input file
 	var input_file_path string
 	flag.StringVar(&input_file_path, "input_path", "sample_input.txt", "path to the input file, with one command on each line")
+	flag.BoolVar(&winner, "winner", true, "whether to calculate the score of the winning or the losing table")
 	flag.Parse()
 	input_file, err := os.Open(input_file_path)
 	if err != nil {
@@ -112,20 +116,36 @@ func main() {
 		drawn_hash[random_value] = true
 
 		// Search for the number on each table
-		for _, bingo_table := range bingo_tables {
+		for b := 0; b < len(bingo_tables); b++ {
+			bingo_table := bingo_tables[b]
+
 			// Tables have fixed size
 			for i := 0; i < 5; i++ {
 				for j := 0; j < 5; j++ {
 					// If the value has been found update both arrays
 					if bingo_table.table[i][j] == random_value {
+						bingo_table.line_matches[i]++
+						bingo_table.column_matches[j]++
+
 						// If one of the arrays reach value 5 the table has won
-						if bingo_table.line_matches[i]++; bingo_table.line_matches[i] >= 5 {
-							score = calculateScore(bingo_table, random_value, drawn_hash)
-							game_won = true
-						}
-						if bingo_table.column_matches[j]++; bingo_table.column_matches[j] >= 5 {
-							score = calculateScore(bingo_table, random_value, drawn_hash)
-							game_won = true
+						if bingo_table.line_matches[i] >= 5 || bingo_table.column_matches[j] >= 5 {
+							if winner {
+								// If we're looking for the first winner calculate the score and mark the game as won
+								score = calculateScore(bingo_table, random_value, drawn_hash)
+								game_won = true
+							} else {
+								// If we're looking for the losing table remove the winning table from the list
+								// But first we check if we're at the last table, if so we have the final score
+								if len(bingo_tables) == 1 {
+									score = calculateScore(bingo_table, random_value, drawn_hash)
+									game_won = true
+								} else {
+									// Remove the table by moving the last element of the slice to the position we're removing
+									// Then reducing the sice of the slice by one
+									bingo_tables[b] = bingo_tables[len(bingo_tables)-1]
+									bingo_tables = bingo_tables[:len(bingo_tables)-1]
+								}
+							}
 						}
 					}
 
