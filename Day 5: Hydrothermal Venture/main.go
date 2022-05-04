@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+type line_segment struct {
+	x1, y1, x2, y2 int
+}
+
 func main() {
 	// Open input file
 	var input_file_path string
@@ -24,6 +28,9 @@ func main() {
 
 	// Keeps track of the highest value that appeared to create a table of that size
 	field_size := 0
+
+	// Saves a list of horizontal and vertical lines
+	var horizontal_and_vertical_lines []line_segment
 
 	for scanner.Scan() {
 		// Reads a line and check that it isn't empty
@@ -52,7 +59,10 @@ func main() {
 			field_size = y2
 		}
 
-		// TODO: Determine the lines
+		// Saves only horizontal and vertical lines
+		if x1 == x2 || y1 == y2 {
+			horizontal_and_vertical_lines = append(horizontal_and_vertical_lines, line_segment{x1, y1, x2, y2})
+		}
 	}
 
 	// Checks for scanner errors, panics if one is found
@@ -60,6 +70,15 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: Generate the table with the lines and count the numbers higher than one
-	fmt.Printf("Field size: %d\n", field_size)
+	// Create the table and initialize it with dots
+	field := make([][]rune, field_size)
+	for i := 0; i < field_size; i++ {
+		field[i] = make([]rune, field_size)
+		for j := 0; j < field_size; j++ {
+			field[i][j] = '.'
+		}
+	}
+
+	// TODO: Go through each line marking them on the table
+	print(field)
 }
