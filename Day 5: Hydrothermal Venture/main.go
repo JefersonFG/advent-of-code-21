@@ -43,7 +43,7 @@ func main() {
 
 		// Parse the input values
 		var x1, y1, x2, y2 int
-		fmt.Sscanf(line, "%d,%d -> %d, %d", &x1, &y1, &x2, &y2)
+		fmt.Sscanf(line, "%d,%d -> %d,%d", &x1, &y1, &x2, &y2)
 
 		// Saves the maximum size
 		if x1 > field_size {
@@ -65,20 +65,46 @@ func main() {
 		}
 	}
 
+	// Input values start at zero and go to the maximum passed, so we increment the size to cover all on the table indexes
+	field_size++
+
 	// Checks for scanner errors, panics if one is found
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
-	// Create the table and initialize it with dots
-	field := make([][]rune, field_size)
+	// Create the table and initialize it with zeroes
+	field := make([][]int, field_size)
 	for i := 0; i < field_size; i++ {
-		field[i] = make([]rune, field_size)
+		field[i] = make([]int, field_size)
 		for j := 0; j < field_size; j++ {
-			field[i][j] = '.'
+			field[i][j] = 0
 		}
 	}
 
-	// TODO: Go through each line marking them on the table
-	print(field)
+	// Go through each line marking them on the table
+	for _, line := range horizontal_and_vertical_lines {
+		// Horizontal line
+		if line.x1 == line.x2 {
+			for j := line.y1; j <= line.y2; j++ {
+				field[line.x1][j]++
+			}
+		}
+
+		// Vertical line
+		if line.y1 == line.y2 {
+			for i := line.x1; i <= line.x2; i++ {
+				field[i][line.y1]++
+			}
+		}
+	}
+
+	// TODO: Count how many occurrences of crossing lines there are on the table
+	// Print the table
+	for i := 0; i < field_size; i++ {
+		for j := 0; j < field_size; j++ {
+			fmt.Print(field[i][j])
+		}
+		fmt.Println()
+	}
 }
