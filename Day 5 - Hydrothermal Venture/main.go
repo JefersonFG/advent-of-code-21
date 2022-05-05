@@ -32,6 +32,9 @@ func main() {
 	// Saves a list of horizontal and vertical lines
 	var horizontal_and_vertical_lines []line_segment
 
+	// For part 2 we want the diagonal lines as well
+	var diagonal_lines []line_segment
+
 	for scanner.Scan() {
 		// Reads a line and check that it isn't empty
 		line := scanner.Text()
@@ -62,13 +65,16 @@ func main() {
 		// Saves only horizontal and vertical lines
 		if x1 == x2 || y1 == y2 {
 			// Saves the lines such that following them on the field can be done from x1 to x2 and from y1 to y2
-			if x2 < x1 {
-				x1, x2 = x2, x1
-			}
-			if y2 < y1 {
-				y1, y2 = y2, y1
+			if (y1 == y2 && x2 < x1) || (x1 == x2 && y2 < y1) {
+				x1, x2, y1, y2 = x2, x1, y2, y1
 			}
 			horizontal_and_vertical_lines = append(horizontal_and_vertical_lines, line_segment{x1, y1, x2, y2})
+		} else {
+			// Saves the diagonal lines making sure that x1 <= x2
+			if x2 < x1 {
+				x1, x2, y1, y2 = x2, x1, y2, y1
+			}
+			diagonal_lines = append(diagonal_lines, line_segment{x1, y1, x2, y2})
 		}
 	}
 
@@ -118,4 +124,38 @@ func main() {
 	}
 
 	fmt.Println("Points with horizontal and vertical lines:", count)
+
+	// Add the diagonal lines and calculate again
+
+	// Go through each line marking them on the table
+	for _, line := range diagonal_lines {
+		// Diagonal line
+		for i := 0; i <= line.x2-line.x1; i++ {
+			// x and y grow at the same pace, so just use one variable
+			y := line.x1 + i
+			var x int
+
+			// We have no guarantee that y goes from y1 to y2, so we verify
+			if line.y2 > line.y1 {
+				x = line.y1 + i
+			} else {
+				x = line.y1 - i
+			}
+
+			field[x][y]++
+		}
+	}
+
+	// Count how many occurrences of crossing lines there are on the table
+	count = 0
+
+	for i := 0; i < field_size; i++ {
+		for j := 0; j < field_size; j++ {
+			if field[i][j] >= 2 {
+				count++
+			}
+		}
+	}
+
+	fmt.Println("Points with diagonal lines:", count)
 }
