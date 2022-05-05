@@ -61,6 +61,13 @@ func main() {
 
 		// Saves only horizontal and vertical lines
 		if x1 == x2 || y1 == y2 {
+			// Saves the lines such that following them on the field can be done from x1 to x2 and from y1 to y2
+			if x2 < x1 {
+				x1, x2 = x2, x1
+			}
+			if y2 < y1 {
+				y1, y2 = y2, y1
+			}
 			horizontal_and_vertical_lines = append(horizontal_and_vertical_lines, line_segment{x1, y1, x2, y2})
 		}
 	}
@@ -87,24 +94,28 @@ func main() {
 		// Horizontal line
 		if line.x1 == line.x2 {
 			for j := line.y1; j <= line.y2; j++ {
-				field[line.x1][j]++
+				field[j][line.x1]++
 			}
 		}
 
 		// Vertical line
 		if line.y1 == line.y2 {
 			for i := line.x1; i <= line.x2; i++ {
-				field[i][line.y1]++
+				field[line.y1][i]++
 			}
 		}
 	}
 
-	// TODO: Count how many occurrences of crossing lines there are on the table
-	// Print the table
+	// Count how many occurrences of crossing lines there are on the table
+	count := 0
+
 	for i := 0; i < field_size; i++ {
 		for j := 0; j < field_size; j++ {
-			fmt.Print(field[i][j])
+			if field[i][j] >= 2 {
+				count++
+			}
 		}
-		fmt.Println()
 	}
+
+	fmt.Println("Points with horizontal and vertical lines:", count)
 }
