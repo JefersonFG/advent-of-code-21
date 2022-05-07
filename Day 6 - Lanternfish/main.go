@@ -62,27 +62,40 @@ func main() {
 		panic(err)
 	}
 
-	// Simulate specific number of days of lanternfish evolution
-	for day := 0; day < simulation_days; day++ {
-		// Saves the current number of lanternfishes so as to not calculate the evolution of new ones
-		school_size := len(lanternfishes)
+	// Here just iterating through the list becomes too intensive, as the list grows exponentially
+	// The ideal solution is to track how many lanternfish we have on each counter value
+	// Then rotate the list to simultaneously decrease the counter of all lanternfishes
+	// Then handle the spawning event
 
-		// Calculate the evolution for each lanternfish that started the day
-		for i := 0; i < school_size; i++ {
-			// If the counter is zero spawn a new lanternfish and reset the counter
-			if lanternfishes[i] == 0 {
-				// Reset the counter
-				lanternfishes[i] = lanternfish_reset_value
+	// Stages of the lanternfish evolution, tracking the counters with its index
+	// And holding the number of fishes on each stage as its value
+	stages := []int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 
-				// Add new fish
-				lanternfishes = append(lanternfishes, new_lanternfish_value)
-			} else {
-				// Otherwise just decrease the counter
-				lanternfishes[i]--
-			}
-		}
+	// Maps the initial lanternfish population to the stages list
+	for _, lanternfish := range lanternfishes {
+		// Since we must first process the counter decrease before spawning new lanternfish
+		// We need the index 0 to hold lanternfish that were at counter 0 and got decreased
+		// So we map the lanternfish to one index above their counters
+		stages[lanternfish+1]++
 	}
 
-	// Print number of lanternfishes
-	fmt.Println("Number of lanternfishes at the end of the simulation:", len(lanternfishes))
+	// Simulate specific number of days of lanternfish evolution
+	for day := 0; day < simulation_days; day++ {
+		// Rotate the list of lanternfishes' stages
+		stages = append(stages[1:], stages[0])
+
+		// Replicate number of lanternfishes that were on counter 0 to position 7, related to counter 6
+		// This way that value incremented position 7 and 9, related to counters 6 and 8
+		// Related to old and new lanternfish respectively
+		stages[7] += stages[0]
+	}
+
+	// Calculate number of lanternfishes
+	sum := 0
+
+	for _, stage := range stages {
+		sum += stage
+	}
+
+	fmt.Println("Number of lanternfishes at the end of the simulation:", sum)
 }
