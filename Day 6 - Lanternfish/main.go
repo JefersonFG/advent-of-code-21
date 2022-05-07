@@ -12,12 +12,15 @@ import (
 
 // Constants
 const (
-	simulation_days         = 80
 	lanternfish_reset_value = 6
 	new_lanternfish_value   = 8
 )
 
 func main() {
+	// Number of days for the simulation as a command line argument
+	var simulation_days int
+	flag.IntVar(&simulation_days, "simulation_days", 80, "number of days for the simulation")
+
 	// Open input file
 	var input_file_path string
 	flag.StringVar(&input_file_path, "input_path", "sample_input.txt", "path to the input file, with one command on each line")
