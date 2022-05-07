@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-// Constants
-const (
-	lanternfish_reset_value = 6
-	new_lanternfish_value   = 8
-)
-
 func main() {
 	// Number of days for the simulation as a command line argument
 	var simulation_days int
