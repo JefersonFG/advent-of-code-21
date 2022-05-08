@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
+	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -51,6 +54,25 @@ func main() {
 		panic(err)
 	}
 
-	// TODO: Calculate the optimal horizontal position
-	println(horizontal_positions)
+	// Calculate the optimal horizontal position
+	// The mean value gets very skewed by outliers, so we use the median value instead
+	optimal_position := median(horizontal_positions)
+
+	// Calculate the fuel consumption to get there
+	fuel_consumption := 0
+	for _, position := range horizontal_positions {
+		fuel_consumption += int(math.Abs(float64(position - optimal_position)))
+	}
+
+	fmt.Printf("Fuel consumption: %d\n", fuel_consumption)
+}
+
+// Simple median value calculating function
+func median(values []int) int {
+	sort.Ints(values)
+	if len(values)%2 != 0 {
+		return values[len(values)/2]
+	} else {
+		return (values[len(values)/2-1] + values[len(values)/2]) / 2
+	}
 }
