@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+var (
+	original_mappings = make(map[int][]string)
+)
+
 func main() {
 	// Open input file
 	var input_file_path string
@@ -71,18 +75,18 @@ func main() {
 	// Sum of all of the output display values
 	output_display_sum := 0
 
-	// Original mapping, so we can translate the values
-	original_mapping := map[string]int{
-		"abcefg":  0,
-		"cf":      1,
-		"acdeg":   2,
-		"acdfg":   3,
-		"bcdf":    4,
-		"abdfg":   5,
-		"abdefg":  6,
-		"acf":     7,
-		"abcdefg": 8,
-		"abcdfg":  9,
+	// Set the original mapping, so we can translate the values
+	original_mappings = map[int][]string{
+		0: {"a", "b", "c", "e", "f", "g"},
+		1: {"c", "f"},
+		2: {"a", "c", "d", "e", "g"},
+		3: {"a", "c", "d", "f", "g"},
+		4: {"b", "c", "d", "f"},
+		5: {"a", "b", "d", "f", "g"},
+		6: {"a", "b", "d", "e", "f", "g"},
+		7: {"a", "c", "f"},
+		8: {"a", "b", "c", "d", "e", "f", "g"},
+		9: {"a", "b", "c", "d", "f", "g"},
 	}
 
 	// For each line find the output display value and accumulate
@@ -97,21 +101,69 @@ func main() {
 
 		// Current mapping with all possible segments from original to current values
 		// Once the mapping is 1:1 we can revert the map to get back the actual numbers
-		current_mapping := map[string]string{
-			"a": "abcdefg",
-			"b": "abcdefg",
-			"c": "abcdefg",
-			"d": "abcdefg",
-			"e": "abcdefg",
-			"f": "abcdefg",
-			"g": "abcdefg",
+		current_mapping := map[string][]string{
+			"a": {"a", "b", "c", "d", "e", "f", "g"},
+			"b": {"a", "b", "c", "d", "e", "f", "g"},
+			"c": {"a", "b", "c", "d", "e", "f", "g"},
+			"d": {"a", "b", "c", "d", "e", "f", "g"},
+			"e": {"a", "b", "c", "d", "e", "f", "g"},
+			"f": {"a", "b", "c", "d", "e", "f", "g"},
+			"g": {"a", "b", "c", "d", "e", "f", "g"},
 		}
 
-		// TODO: Look into numbers 1, 4 and 7 and update the possible mapping
+		for _, unique_signal_pattern := range unique_signal_patterns[i] {
+			// Look into numbers 1, 4 and 7 and update the possible mapping
+			if len(unique_signal_pattern) == 2 {
+				update_current_mapping(current_mapping, unique_signal_pattern, []int{1})
+			} else if len(unique_signal_pattern) == 4 {
+				update_current_mapping(current_mapping, unique_signal_pattern, []int{4})
+			} else if len(unique_signal_pattern) == 3 {
+				update_current_mapping(current_mapping, unique_signal_pattern, []int{7})
+			}
+
+			// TODO: We must find out which of the possible numbers it is
+			// The code below doesn't work
+			// To find out we must check the mapping at this point and see if the current unique pattern
+			// Could be matched with all of these numbers, until we know which it is and update the current_mapping
+			if len(unique_signal_pattern) == 6 {
+				update_current_mapping(current_mapping, unique_signal_pattern, []int{0, 6, 9})
+			} else if len(unique_signal_pattern) == 5 {
+				update_current_mapping(current_mapping, unique_signal_pattern, []int{2, 3, 5})
+			}
+		}
 
 		// Accumulate
 		output_display_sum += output_display_value
 	}
 
 	fmt.Printf("Sum of all the output display values: %d\n", output_display_sum)
+}
+
+// Function for updating the current mapping with the hints the current unique signal pattern gives
+// Such as that the original segment c might only be mapped to segments b and e
+// Because the unique pattern contains these on the number 1, which covers the original segment c
+func update_current_mapping(current_mapping map[string][]string, unique_signal_pattern string, possible_numbers []int) {
+	// Repeat for every possible number, determined previously by the length of the unique signal pattern
+	for _, possible_number := range possible_numbers {
+		segments := strings.Split(unique_signal_pattern, "")
+		original_mapping := original_mappings[possible_number]
+
+		// For each segment of the original mapping change the values of the current mapping
+		for _, original_segment := range original_mapping {
+			var updated_mapping []string
+			// Look into each segment of the current unique pattern
+			for _, current_segment := range segments {
+				// Traverse the current mapping for the original segment
+				for _, possible_segment := range current_mapping[original_segment] {
+					// If the value on the current mapping is the same as the unique pattern we keep it
+					// Otherwise we discard it
+					if possible_segment == current_segment {
+						updated_mapping = append(updated_mapping, possible_segment)
+					}
+				}
+			}
+
+			current_mapping[original_segment] = updated_mapping
+		}
+	}
 }
