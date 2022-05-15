@@ -111,25 +111,44 @@ func main() {
 			"g": {"a", "b", "c", "d", "e", "f", "g"},
 		}
 
+		// Actual mapping of number to segments, used to match to one another
+		actual_mapping := make(map[int]string)
+
+		// Maps the unique signal patterns to their lengths, used to find out which actual numbers they represent
+		unique_signal_len_map := make(map[int][]string)
+
 		for _, unique_signal_pattern := range unique_signal_patterns[i] {
 			// Look into numbers 1, 4 and 7 and update the possible mapping
 			if len(unique_signal_pattern) == 2 {
-				update_current_mapping(current_mapping, unique_signal_pattern, []int{1})
+				update_current_mapping(current_mapping, unique_signal_pattern, 1)
+				actual_mapping[1] = unique_signal_pattern
 			} else if len(unique_signal_pattern) == 4 {
-				update_current_mapping(current_mapping, unique_signal_pattern, []int{4})
+				update_current_mapping(current_mapping, unique_signal_pattern, 4)
+				actual_mapping[4] = unique_signal_pattern
 			} else if len(unique_signal_pattern) == 3 {
-				update_current_mapping(current_mapping, unique_signal_pattern, []int{7})
+				update_current_mapping(current_mapping, unique_signal_pattern, 7)
+				actual_mapping[7] = unique_signal_pattern
 			}
 
-			// TODO: We must find out which of the possible numbers it is
-			// The code below doesn't work
-			// To find out we must check the mapping at this point and see if the current unique pattern
-			// Could be matched with all of these numbers, until we know which it is and update the current_mapping
+			// First map the unique signal patterns to their lengths, so we can go len by len
 			if len(unique_signal_pattern) == 6 {
-				update_current_mapping(current_mapping, unique_signal_pattern, []int{0, 6, 9})
+				unique_signal_len_map[6] = append(unique_signal_len_map[6], unique_signal_pattern)
 			} else if len(unique_signal_pattern) == 5 {
-				update_current_mapping(current_mapping, unique_signal_pattern, []int{2, 3, 5})
+				unique_signal_len_map[5] = append(unique_signal_len_map[5], unique_signal_pattern)
 			}
+		}
+
+		// TODO: Go through len by len, traverse until each number is found out (for each is not the best option)
+		for _, unique_signal_pattern := range unique_signal_len_map[6] {
+			// To find out each number we're looking at we can try to match the unknown number with a known number
+			// For example, 9 is the only number that has 4 segments in common with 4 (aside from 8, which doesn't help)
+			// After we know which one is 9 we'll know which is zero as it is the only other 6 displays number
+			// That has 3 segments in common with 7
+			// Which leaves us with only 6 remaining
+		}
+		for _, unique_signal_pattern := range unique_signal_len_map[5] {
+			// Here we know that 5 is a 6 with an extra segment
+			// And that 3 has two segments in common with 1, whereas 2 doesn't
 		}
 
 		// Accumulate
@@ -142,28 +161,25 @@ func main() {
 // Function for updating the current mapping with the hints the current unique signal pattern gives
 // Such as that the original segment c might only be mapped to segments b and e
 // Because the unique pattern contains these on the number 1, which covers the original segment c
-func update_current_mapping(current_mapping map[string][]string, unique_signal_pattern string, possible_numbers []int) {
-	// Repeat for every possible number, determined previously by the length of the unique signal pattern
-	for _, possible_number := range possible_numbers {
-		segments := strings.Split(unique_signal_pattern, "")
-		original_mapping := original_mappings[possible_number]
+func update_current_mapping(current_mapping map[string][]string, unique_signal_pattern string, actual_number int) {
+	segments := strings.Split(unique_signal_pattern, "")
+	original_mapping := original_mappings[actual_number]
 
-		// For each segment of the original mapping change the values of the current mapping
-		for _, original_segment := range original_mapping {
-			var updated_mapping []string
-			// Look into each segment of the current unique pattern
-			for _, current_segment := range segments {
-				// Traverse the current mapping for the original segment
-				for _, possible_segment := range current_mapping[original_segment] {
-					// If the value on the current mapping is the same as the unique pattern we keep it
-					// Otherwise we discard it
-					if possible_segment == current_segment {
-						updated_mapping = append(updated_mapping, possible_segment)
-					}
+	// For each segment of the original mapping change the values of the current mapping
+	for _, original_segment := range original_mapping {
+		var updated_mapping []string
+		// Look into each segment of the current unique pattern
+		for _, current_segment := range segments {
+			// Traverse the current mapping for the original segment
+			for _, possible_segment := range current_mapping[original_segment] {
+				// If the value on the current mapping is the same as the unique pattern we keep it
+				// Otherwise we discard it
+				if possible_segment == current_segment {
+					updated_mapping = append(updated_mapping, possible_segment)
 				}
 			}
-
-			current_mapping[original_segment] = updated_mapping
 		}
+
+		current_mapping[original_segment] = updated_mapping
 	}
 }
