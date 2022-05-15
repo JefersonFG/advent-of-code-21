@@ -138,11 +138,12 @@ func main() {
 			}
 		}
 
-		// TODO: Go through len by len, traverse until each number is found out (for each is not the best option)
+		// TODO: Go through len by len, traverse all numbers are matched, going for len6 then len5
+		var matched9, matched0, matched6, matched5, matched3, matched2 bool
 		for _, unique_signal_pattern := range unique_signal_len_map[6] {
 			// To find out each number we're looking at we can try to match the unknown number with a known number
 			// For example, 9 is the only number that has 4 segments in common with 4 (aside from 8, which doesn't help)
-			// After we know which one is 9 we'll know which is zero as it is the only other 6 displays number
+			// After we know which one is 9 we'll know which is 0 as it is the only other 6 displays number
 			// That has 3 segments in common with 7
 			// Which leaves us with only 6 remaining
 		}
