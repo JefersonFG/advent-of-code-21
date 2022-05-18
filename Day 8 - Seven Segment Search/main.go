@@ -138,19 +138,81 @@ func main() {
 			}
 		}
 
-		// TODO: Go through len by len, traverse all numbers are matched, going for len6 then len5
-		var matched9, matched0, matched6, matched5, matched3, matched2 bool
-		for _, unique_signal_pattern := range unique_signal_len_map[6] {
-			// To find out each number we're looking at we can try to match the unknown number with a known number
-			// For example, 9 is the only number that has 4 segments in common with 4 (aside from 8, which doesn't help)
-			// After we know which one is 9 we'll know which is 0 as it is the only other 6 displays number
-			// That has 3 segments in common with 7
-			// Which leaves us with only 6 remaining
+		// Look at the numbers with six segments on
+
+		// To find out each number we're looking at we can try to match the unknown number with a known number
+		// For example, 9 is the only number that has 4 segments in common with 4 (aside from 8, which doesn't help)
+		// After we know which one is 9 we'll know which is 0 as it is the only other 6 displays number
+		// That has 3 segments in common with 7
+		// Which leaves us with only 6 remaining
+		for i := 0; i < len(unique_signal_len_map[6]); i++ {
+			// Find 9
+			unique_signal_pattern := unique_signal_len_map[6][i]
+			if segments_in_common(unique_signal_pattern, actual_mapping[4]) == 4 {
+				update_current_mapping(current_mapping, unique_signal_pattern, 9)
+				actual_mapping[9] = unique_signal_pattern
+
+				// Remove the item from the list and break the loop, marking it as done
+				unique_signal_len_map[6] = remove(unique_signal_len_map[6], i)
+				break
+			}
 		}
-		for _, unique_signal_pattern := range unique_signal_len_map[5] {
-			// Here we know that 5 is a 6 with an extra segment
-			// And that 3 has two segments in common with 1, whereas 2 doesn't
+		for i := 0; i < len(unique_signal_len_map[6]); i++ {
+			// Find 7
+			unique_signal_pattern := unique_signal_len_map[6][i]
+			if segments_in_common(unique_signal_pattern, actual_mapping[7]) == 3 {
+				update_current_mapping(current_mapping, unique_signal_pattern, 0)
+				actual_mapping[0] = unique_signal_pattern
+
+				// Remove the item from the list and break the loop
+				unique_signal_len_map[6] = remove(unique_signal_len_map[6], i)
+				break
+			}
 		}
+		// Last one is 6
+		unique_signal_pattern := unique_signal_len_map[6][0]
+		update_current_mapping(current_mapping, unique_signal_pattern, 6)
+		actual_mapping[6] = unique_signal_pattern
+
+		// Look at the numbers with five segments on
+
+		// Here we know that 6 is a 5 with an extra segment
+		// And that 3 has two segments in common with 1, whereas 2 doesn't
+		for i := 0; i < len(unique_signal_len_map[5]); i++ {
+			// Find 5
+			unique_signal_pattern := unique_signal_len_map[5][i]
+			if segments_in_common(unique_signal_pattern, actual_mapping[6]) == 5 {
+				update_current_mapping(current_mapping, unique_signal_pattern, 5)
+				actual_mapping[5] = unique_signal_pattern
+
+				// Remove the item from the list and break the loop
+				unique_signal_len_map[5] = remove(unique_signal_len_map[5], i)
+				break
+			}
+		}
+		for i := 0; i < len(unique_signal_len_map[5]); i++ {
+			// Find 3
+			unique_signal_pattern := unique_signal_len_map[5][i]
+			if segments_in_common(unique_signal_pattern, actual_mapping[1]) == 2 {
+				update_current_mapping(current_mapping, unique_signal_pattern, 3)
+				actual_mapping[3] = unique_signal_pattern
+
+				// Remove the item from the list and break the loop
+				unique_signal_len_map[5] = remove(unique_signal_len_map[5], i)
+				break
+			}
+		}
+		// Last one is 2
+		unique_signal_pattern = unique_signal_len_map[5][0]
+		update_current_mapping(current_mapping, unique_signal_pattern, 2)
+		actual_mapping[2] = unique_signal_pattern
+
+		// TODO: Current solution still doesn't map 1:1, might need a different strategy
+		// We already know all of the numbers, we could just check that the number of segments in common is the len of the output number
+		// To know what is it's value
+		// It's possible to optimize the "actual mapping" to sort by len so the comparison is easier
+
+		// TODO: Once we know all the mappings, determine the output number and accumulate it's value
 
 		// Accumulate
 		output_display_sum += output_display_value
@@ -183,4 +245,23 @@ func update_current_mapping(current_mapping map[string][]string, unique_signal_p
 
 		current_mapping[original_segment] = updated_mapping
 	}
+}
+
+// Removes an item from the slice without keeping the order
+func remove(s []string, i int) []string {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+// Returns the number of segments in common, comparing each character on each string to the other
+func segments_in_common(mapping1, mapping2 string) (common_segments int) {
+	for i := 0; i < len(mapping1); i++ {
+		for j := 0; j < len(mapping2); j++ {
+			if mapping1[i] == mapping2[j] {
+				common_segments++
+			}
+		}
+	}
+
+	return
 }
